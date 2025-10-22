@@ -1,5 +1,6 @@
 #include "Enigma.h"
 #include <iostream>
+#include <string.h>
 
 namespace Encryption {
 
@@ -8,6 +9,7 @@ namespace Encryption {
         for (int i = 0; i < permutation.length(); i++)
         {
             permutations[permutation[i]] = permutation[(i+1) % permutation.length()] ;
+            reversePermutations[permutation[(i+1) % permutation.length()]] = permutation[i];
         }
         startPosition = 'A';
         currentPosition = 'A';
@@ -77,11 +79,10 @@ namespace Encryption {
     Enigma::Enigma(const Rotor& left, const Rotor& middle, const Rotor& right, const Reflector& reflector)
         : rotorLeft(left), rotorMiddle(middle), rotorRight(right), reflector(reflector) {}
 
-    char Enigma::encrypt(char c)
+    char Enigma::encryptChar(char c)
     {
         if (c < 'A' || c > 'Z') return c;
 
-        rotorRight.rotate();
 
         char signal = rotorRight.mapForward(c);
         signal = rotorMiddle.mapForward(signal);
@@ -93,7 +94,20 @@ namespace Encryption {
         signal = rotorMiddle.mapBackward(signal);
         signal = rotorRight.mapBackward(signal);
 
+        rotorRight.rotate();
+
+
         return signal;
     }
 
+    char* Enigma::encrypt(const char* c)
+    {
+        char * encrypted = new char[strlen(c) + 1];
+        for (int i = 0; i < strlen(c); i++)
+        {
+            encrypted[i] = this->encryptChar(c[i]);
+        }
+
+        return encrypted;
+    }
 } // namespace Encryption

@@ -60,7 +60,9 @@ namespace Encryption {
     public:
         Enigma(const Rotor& left, const Rotor& middle, const Rotor& right, const Reflector& reflector);
 
-        char encrypt(char c);
+        char encryptChar(char c);
+
+        char* encrypt(const char *c);
     };
 
 } // namespace Encryption
