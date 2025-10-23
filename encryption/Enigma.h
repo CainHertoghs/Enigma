@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 namespace Encryption {
 
@@ -41,12 +42,11 @@ namespace Encryption {
     class PlugBoard
     {
         std::map<char, char> permutations;
+    public:
 
-        public:
+        PlugBoard(std::vector<std::pair<char, char>> connections);
 
-        // explicit PlugBoard(const std::string& permutation);
-        //
-        // char plugBoardMap(char input);
+        char plugBoardMap(char input);
     };
 
 
@@ -56,9 +56,10 @@ namespace Encryption {
         Rotor rotorMiddle;
         Rotor rotorRight;
         Reflector reflector;
+        PlugBoard plugBoard;
 
     public:
-        Enigma(const Rotor& left, const Rotor& middle, const Rotor& right, const Reflector& reflector);
+        Enigma(const Rotor& left, const Rotor& middle, const Rotor& right, const Reflector& reflector, const PlugBoard& plugBoard);
 
         char encryptChar(char c);
 

@@ -6,10 +6,10 @@ namespace Encryption {
 
     Rotor::Rotor(const std::string& permutation)
     {
-        for (int i = 0; i < permutation.length(); i++)
+        for (int i = 0; i < 26; i++)
         {
-            permutations[permutation[i]] = permutation[(i+1) % permutation.length()] ;
-            reversePermutations[permutation[(i+1) % permutation.length()]] = permutation[i];
+            permutations['A' + i] = permutation[i] ;
+            reversePermutations[permutation[i]] = 'A' + i;
         }
         startPosition = 'A';
         currentPosition = 'A';
@@ -62,12 +62,9 @@ namespace Encryption {
 
     Reflector::Reflector(const std::string& permutation)
     {
-        for (int i = 0; i < permutation.length(); i += 2)
+        for (int i = 0; i < 26; i++)
         {
-            char a = permutation[i];
-            char b = permutation[i + 1];
-            permutations[a] = b;
-            permutations[b] = a;
+            permutations['A' + i] = permutation[i];
         }
     }
 
@@ -76,15 +73,16 @@ namespace Encryption {
         return permutations.at(input);
     }
 
-    Enigma::Enigma(const Rotor& left, const Rotor& middle, const Rotor& right, const Reflector& reflector)
-        : rotorLeft(left), rotorMiddle(middle), rotorRight(right), reflector(reflector) {}
+    Enigma::Enigma(const Rotor& left, const Rotor& middle, const Rotor& right, const Reflector& reflector, const PlugBoard& plugBoard)
+        : rotorLeft(left), rotorMiddle(middle), rotorRight(right), reflector(reflector), plugBoard(plugBoard) {}
 
     char Enigma::encryptChar(char c)
     {
         if (c < 'A' || c > 'Z') return c;
 
+        char signal = plugBoard.plugBoardMap(c);
 
-        char signal = rotorRight.mapForward(c);
+        signal = rotorRight.mapForward(signal);
         signal = rotorMiddle.mapForward(signal);
         signal = rotorLeft.mapForward(signal);
 
@@ -94,8 +92,17 @@ namespace Encryption {
         signal = rotorMiddle.mapBackward(signal);
         signal = rotorRight.mapBackward(signal);
 
-        rotorRight.rotate();
+        signal = plugBoard.plugBoardMap(signal);
 
+        rotorRight.rotate();
+        if (rotorRight.getCurrentPosition() == 'A')
+        {
+            rotorMiddle.rotate();
+            if (rotorMiddle.getCurrentPosition() == 'A')
+            {
+                rotorLeft.rotate();
+            }
+        }
 
         return signal;
     }
@@ -109,5 +116,19 @@ namespace Encryption {
         }
 
         return encrypted;
+    }
+
+    PlugBoard::PlugBoard(std::vector<std::pair<char, char>> connections) {
+        for (const auto& pair : connections) {
+            permutations[pair.first] = pair.second;
+            permutations[pair.second] = pair.first;
+        }
+    }
+
+    char PlugBoard::plugBoardMap(char input) {
+        if (permutations.find(input) != permutations.end()) {
+            return permutations[input];
+        }
+        return input;
     }
 } // namespace Encryption
